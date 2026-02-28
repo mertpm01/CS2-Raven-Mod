@@ -10,10 +10,6 @@
 #include "../classes/globals.hpp"
 
 namespace hack {
-	// Aimbot için önceki pozisyonları sakla
-	std::map<uintptr_t, Vector3> previous_positions;
-	std::map<uintptr_t, std::chrono::steady_clock::time_point> last_update_time;
-	
 	// İnsanlaştırma için
 	std::chrono::steady_clock::time_point last_aim_time;
 	std::mt19937 rng(std::random_device{}());
@@ -30,63 +26,6 @@ namespace hack {
 		float dy = to.y - from.y;
 		float dz = to.z - from.z;
 		return sqrtf(dx * dx + dy * dy + dz * dz);
-	}
-	
-	// Hız tahmini - hareket eden hedeflere önden atış
-	Vector3 predict_position(CPlayer* player, float bullet_speed = 3000.0f) {
-		Vector3 predicted = player->origin;
-		
-		// Önceki pozisyon var mı?
-		auto it = previous_positions.find((uintptr_t)player);
-		if (it != previous_positions.end()) {
-			auto time_it = last_update_time.find((uintptr_t)player);
-			if (time_it != last_update_time.end()) {
-				// Zaman farkını hesapla
-				auto now = std::chrono::steady_clock::now();
-				float dt = std::chrono::duration<float>(now - time_it->second).count();
-				
-				if (dt > 0.001f && dt < 1.0f) { // Geçerli zaman aralığı
-					// Hızı hesapla
-					Vector3 velocity;
-					velocity.x = (player->origin.x - it->second.x) / dt;
-					velocity.y = (player->origin.y - it->second.y) / dt;
-					velocity.z = (player->origin.z - it->second.z) / dt;
-					
-					// Mermi uçuş süresini hesapla
-					float distance = calculate_3d_distance(g_game.localOrigin, player->origin);
-					float time_to_hit = distance / bullet_speed;
-					
-					// Gelecekteki pozisyonu tahmin et
-					predicted.x += velocity.x * time_to_hit;
-					predicted.y += velocity.y * time_to_hit;
-					predicted.z += velocity.z * time_to_hit;
-				}
-			}
-		}
-		
-		// Pozisyonu güncelle
-		previous_positions[(uintptr_t)player] = player->origin;
-		last_update_time[(uintptr_t)player] = std::chrono::steady_clock::now();
-		
-		return predicted;
-	}
-	
-	// Hedef önceliği hesapla (düşük = daha iyi)
-	float calculate_target_priority(CPlayer* player, float screen_dist, float world_dist) {
-		float priority = screen_dist; // Temel: ekran mesafesi
-		
-		// Düşük can = daha yüksek öncelik
-		priority *= (player->health / 100.0f);
-		
-		// Yakın mesafe = daha yüksek öncelik
-		priority *= (world_dist / 5000.0f);
-		
-		// Flashlanmış düşman = daha yüksek öncelik
-		if (player->flashAlpha > 100) {
-			priority *= 0.5f;
-		}
-		
-		return priority;
 	}
 	
 	// Otomatik atış - KALDIRILDI (triggerbot'a taşındı)
@@ -158,15 +97,13 @@ namespace hack {
 		}
 	}
 
-	// İYİLEŞTİRİLMİŞ AIMBOT - Daha hassas, akıllı ve pürüzsüz
+	// HIZLI VE DİREKT AIMBOT - Tahmin yok, direkt kafaya
 	void aimbot() {
 		if (!config::aimbot_enabled) return;
 		if (!(GetAsyncKeyState(config::aimbot_key) & 0x8000)) return;
 		if (g_game.players.empty()) return;
 
-		auto current_time = std::chrono::steady_clock::now();
-		auto time_since_last = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - last_aim_time).count();
-		if (time_since_last < 1) return; // 1ms - çok hızlı
+		// Gecikme kontrolü kaldırıldı - maksimum hız
 
 		float screen_center_x = g::gameBounds.right / 2.0f;
 		float screen_center_y = g::gameBounds.bottom / 2.0f;
@@ -174,9 +111,8 @@ namespace hack {
 		float best_distance = 999999.0f;
 		CPlayer* best_target = nullptr;
 		Vector3 best_screen_pos;
-		float best_world_dist = 0;
 
-		// En yakın hedefi bul (basit ve etkili)
+		// En yakın hedefi bul
 		for (auto& player : g_game.players) {
 			if (player.health <= 0) continue;
 			
@@ -185,11 +121,8 @@ namespace hack {
 			float world_distance = calculate_3d_distance(g_game.localOrigin, player.origin);
 			if (world_distance > 15000.0f) continue; // 150m max
 
-			// Hız tahmini
-			Vector3 predicted = predict_position(&player);
-			
-			// Hedef pozisyon
-			Vector3 target_pos = predicted;
+			// Hedef pozisyon - TAHMİN YOK, DİREKT MEVCUT POZİSYON
+			Vector3 target_pos = player.origin;
 			if (config::aimbot_target == 0) target_pos.z += 65.0f; // Kafa
 			else if (config::aimbot_target == 1) target_pos.z += 50.0f; // Göğüs
 			else target_pos.z += 10.0f; // Ayak
@@ -204,12 +137,11 @@ namespace hack {
 			if (config::aimbot_fov > 0 && screen_dist > config::aimbot_fov) continue;
 			if (config::aimbot_wall_check && !player.is_spotted) continue;
 
-			// En yakın hedefi seç (ekran mesafesine göre)
+			// En yakın hedefi seç
 			if (screen_dist < best_distance) {
 				best_distance = screen_dist;
 				best_target = &player;
 				best_screen_pos = screen_pos;
-				best_world_dist = world_distance;
 			}
 		}
 
@@ -217,34 +149,18 @@ namespace hack {
 			float dx = best_screen_pos.x - screen_center_x;
 			float dy = best_screen_pos.y - screen_center_y;
 
-			// İnsanlaştırıcı
+			// İnsanlaştırıcı (opsiyonel)
 			if (config::aimbot_humanizer) {
-				dx += random_float(-0.5f, 0.5f);
-				dy += random_float(-0.5f, 0.5f);
+				dx += random_float(-0.3f, 0.3f);
+				dy += random_float(-0.3f, 0.3f);
 			}
 
-			// Akıllı yumuşatma - mesafeye göre otomatik ayarlama
-			float smooth = config::aimbot_smooth;
-			if (best_world_dist < 3000.0f) smooth *= 1.8f; // Çok yakın
-			else if (best_world_dist < 6000.0f) smooth *= 1.3f; // Yakın
-			
-			// Hedef hızına göre yumuşatma azalt (hızlı hedefler için)
-			float target_speed = sqrtf(
-				(best_target->origin.x - previous_positions[(uintptr_t)best_target].x) *
-				(best_target->origin.x - previous_positions[(uintptr_t)best_target].x) +
-				(best_target->origin.y - previous_positions[(uintptr_t)best_target].y) *
-				(best_target->origin.y - previous_positions[(uintptr_t)best_target].y)
-			);
-			if (target_speed > 200.0f) smooth *= 0.8f; // Hızlı hareket eden hedef
-			
-			dx /= smooth;
-			dy /= smooth;
+			// Basit yumuşatma
+			dx /= config::aimbot_smooth;
+			dy /= config::aimbot_smooth;
 
-			// Hassas hareket - küçük hareketlerde bile tepki ver
-			if (fabs(dx) > 0.1f || fabs(dy) > 0.1f) {
-				mouse_event(MOUSEEVENTF_MOVE, (LONG)dx, (LONG)dy, 0, 0);
-				last_aim_time = current_time;
-			}
+			// Direkt hareket - gecikme yok
+			mouse_event(MOUSEEVENTF_MOVE, (LONG)dx, (LONG)dy, 0, 0);
 		}
 	}
 	std::vector<std::pair<std::string, std::string>> boneConnections = {
@@ -847,11 +763,11 @@ namespace hack {
 			render::DrawFilledBox(g::hdcBuffer, center_x - 1, center_y - 1, 2, 2, RGB(255, 0, 0));
 		}
 		
-		// Bomba Timer - Basit ve Çalışan Versiyon
+		// Bomba Timer - Düzeltilmiş Versiyon
+		static auto bomb_plant_time = std::chrono::steady_clock::now();
+		static bool was_planted = false;
+		
 		if (config::show_bomb_timer && g_game.isC4Planted) {
-			static auto bomb_plant_time = std::chrono::steady_clock::now();
-			static bool was_planted = false;
-			
 			// Bomba yeni dikildi mi?
 			if (!was_planted) {
 				bomb_plant_time = std::chrono::steady_clock::now();
@@ -904,8 +820,9 @@ namespace hack {
 			}
 		} else {
 			// Bomba defuse edildi veya patladı - reset
-			static bool was_planted = false;
-			was_planted = false;
+			if (was_planted) {
+				was_planted = false;
+			}
 		}
 		
 		// std::this_thread::sleep_for(std::chrono::milliseconds(1));
