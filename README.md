@@ -117,4 +117,4 @@ Bu proje **MIT License** altında lisanslanmıştır. Detaylar için [LICENSE](L
 
 ---
 
-**Made with ❤️ by mertpm.1**
+**Made with ❤️ by mertpm**
