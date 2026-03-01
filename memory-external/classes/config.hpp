@@ -28,19 +28,19 @@ namespace config {
 	inline float render_distance = -1.f;
 	inline int flag_render_distance = 200;
 	inline bool show_box_esp = true;
-	inline bool show_3d_box_esp = false; // 3D box ESP
-	inline bool show_skeleton_esp = false;
-	inline bool show_head_tracker = false;
-	inline bool show_extra_flags = false;
+	inline bool show_3d_box_esp = true; // 3D box ESP - AÇIK
+	inline bool show_skeleton_esp = true; // AÇIK
+	inline bool show_head_tracker = true; // AÇIK
+	inline bool show_extra_flags = true; // AÇIK
 	
 	// Misc settings
 	inline bool show_fps = true;
-	inline bool show_crosshair = false;
+	inline bool show_crosshair = true; // AÇIK
 	inline bool show_bomb_timer = true;
 	inline bool show_grenade_prediction = true; // Granat/molotof yörüngesi
 
 	// Aimbot settings
-	inline bool aimbot_enabled = false;
+	inline bool aimbot_enabled = true; // AÇIK - Otomatik aktif
 	inline bool aimbot_team_check = true;
 	inline bool aimbot_deathmatch_mode = false; // Ölüm maçı modu - takım kontrolü yok
 	inline bool aimbot_humanizer = true; // İnsanlaştırıcı - rastgele gecikme ve sapma
@@ -49,12 +49,12 @@ namespace config {
 	inline int aimbot_key = VK_XBUTTON2; // Mouse 5 button (default)
 	inline bool aimbot_visible_check = true;
 	inline bool aimbot_predict_movement = true; // Hareket tahmini
-	inline int aimbot_target = 1; // 0=Kafa, 1=Göğüs, 2=Ayak
+	inline int aimbot_target = 0; // 0=Kafa (HEADSHOT), 1=Göğüs, 2=Ayak
 	inline bool aimbot_wall_check = true; // Duvar kontrolü - açıkken duvar arkasına kilitlenmez
 	inline bool rcs_enabled = true; // Recoil Control System - sprey kontrolü
 	
 	// Triggerbot settings (ayrı özellik)
-	inline bool triggerbot_enabled = false;
+	inline bool triggerbot_enabled = true; // AÇIK - Otomatik aktif
 	inline bool triggerbot_team_check = true;
 	inline int triggerbot_delay = 50; // ms - ateş gecikmesi (0-500)
 	inline int triggerbot_key = VK_XBUTTON1; // Mouse 4 button (default)

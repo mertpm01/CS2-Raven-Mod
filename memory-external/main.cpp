@@ -210,11 +210,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		
 		if (GetAsyncKeyState(VK_END) & 0x8000) finish = true;
 		
-		// Right Shift tuşu ile menü aç/kapat
+		// DELETE tuşu ile menü aç/kapat
 		static DWORD last_menu_press = 0;
 		static bool menu_was_pressed = false;
 		
-		bool menu_is_pressed = (GetAsyncKeyState(VK_RSHIFT) & 0x8000) != 0;
+		bool menu_is_pressed = (GetAsyncKeyState(VK_DELETE) & 0x8000) != 0;
 		
 		if (menu_is_pressed && !menu_was_pressed) {
 			DWORD now = GetTickCount();

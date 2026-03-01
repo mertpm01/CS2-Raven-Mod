@@ -108,7 +108,7 @@ Bu proje **sadece eğitim amaçlıdır**. Oyun içinde kullanımı **ban** ile s
 
 - [IMXNOOBX](https://github.com/IMXNOOBX) - Orijinal CS2 External ESP projesi
 - [UnnamedZ03](https://github.com/UnnamedZ03) - Offset ve rehber
-- [a2x](https://github.com/a2x) - CS2 Dumper
+- [a2x](https://github.com/a2x) - CS2 Dumper ve Offsets
 - UnknownCheats topluluğu
 
 ## 📝 Lisans
@@ -117,4 +117,4 @@ Bu proje **MIT License** altında lisanslanmıştır. Detaylar için [LICENSE](L
 
 ---
 
-**Made with ❤️ by balyusuf1111-maker**
+**Made with ❤️ by MERTBABA-maker**
