@@ -20,7 +20,7 @@ namespace hack {
 		return dist(rng);
 	}
 
-	// 3D mesafe hesapla
+	// Calculate 3D distance
 	float calculate_3d_distance(const Vector3& from, const Vector3& to) {
 		float dx = to.x - from.x;
 		float dy = to.y - from.y;
@@ -80,7 +80,7 @@ namespace hack {
 			
 			// On crosshair? (within 30 pixels)
 			if (distance < 30.0f) {
-				// Gecikme uygula
+				// Apply delay
 				static auto last_trigger_time = std::chrono::steady_clock::now();
 				auto now = std::chrono::steady_clock::now();
 				auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_trigger_time).count();
@@ -159,7 +159,7 @@ namespace hack {
 			dx /= config::aimbot_smooth;
 			dy /= config::aimbot_smooth;
 
-			// Direkt hareket - gecikme yok
+			// Direct movement - no delay
 			mouse_event(MOUSEEVENTF_MOVE, (LONG)dx, (LONG)dy, 0, 0);
 		}
 	}
@@ -284,25 +284,25 @@ namespace hack {
 					sc[i] = g_game.world_to_screen(&corners[i]);
 					if (sc[i].z < 0.01f) {
 						allVisible = false;
-						break; // Erken çık
+						break; // Early exit
 					}
 				}
 				
-				// Tüm köşeler görünüyorsa çiz
+				// Draw if all corners visible
 				if (allVisible) {
-					// Alt yüz (4 çizgi)
+					// Bottom face (4 lines)
 					render::DrawLine(g::hdcBuffer, sc[0].x, sc[0].y, sc[1].x, sc[1].y, boxColor);
 					render::DrawLine(g::hdcBuffer, sc[1].x, sc[1].y, sc[2].x, sc[2].y, boxColor);
 					render::DrawLine(g::hdcBuffer, sc[2].x, sc[2].y, sc[3].x, sc[3].y, boxColor);
 					render::DrawLine(g::hdcBuffer, sc[3].x, sc[3].y, sc[0].x, sc[0].y, boxColor);
 					
-					// Üst yüz (4 çizgi)
+					// Top face (4 lines)
 					render::DrawLine(g::hdcBuffer, sc[4].x, sc[4].y, sc[5].x, sc[5].y, boxColor);
 					render::DrawLine(g::hdcBuffer, sc[5].x, sc[5].y, sc[6].x, sc[6].y, boxColor);
 					render::DrawLine(g::hdcBuffer, sc[6].x, sc[6].y, sc[7].x, sc[7].y, boxColor);
 					render::DrawLine(g::hdcBuffer, sc[7].x, sc[7].y, sc[4].x, sc[4].y, boxColor);
 					
-					// Dikey kenarlar (4 çizgi)
+					// Vertical edges (4 lines)
 					render::DrawLine(g::hdcBuffer, sc[0].x, sc[0].y, sc[4].x, sc[4].y, boxColor);
 					render::DrawLine(g::hdcBuffer, sc[1].x, sc[1].y, sc[5].x, sc[5].y, boxColor);
 					render::DrawLine(g::hdcBuffer, sc[2].x, sc[2].y, sc[6].x, sc[6].y, boxColor);

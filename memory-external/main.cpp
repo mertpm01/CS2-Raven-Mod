@@ -121,8 +121,14 @@ void read_thread() {
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
-	// Konsolu tamamen kapat
-	FreeConsole();
+	// Konsolu aç - hata ayıklama için
+	AllocConsole();
+	FILE* fDummy;
+	freopen_s(&fDummy, "CONIN$", "r", stdin);
+	freopen_s(&fDummy, "CONOUT$", "w", stdout);
+	freopen_s(&fDummy, "CONOUT$", "w", stderr);
+	
+	std::cout << "CS2 ESP Starting..." << std::endl;
 	
 	utils.update_console_title();
 	if (config::read()) {
@@ -149,10 +155,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 
 	g_game.init();
-
-	if (g_game.buildNumber != updater::build_number) {
-		// Build mismatch - wait for user
-		MessageBoxA(NULL, "Build number mismatch! ESP may not work.\nPress OK to continue.", "CS2 ESP Warning", MB_OK | MB_ICONWARNING);
+	
+	// Check if game process was found
+	if (!g_game.process) {
+		MessageBoxA(NULL, "CS2 game not found! Please start CS2 first.", "CS2 ESP Error", MB_OK | MB_ICONERROR);
+		return 0;
+	}
+	
+	// Check if window handle is valid
+	if (!g_game.process->hwnd_) {
+		MessageBoxA(NULL, "CS2 window not found! Please make sure CS2 is running.", "CS2 ESP Error", MB_OK | MB_ICONERROR);
+		return 0;
 	}
 
 	// Wait for game window
