@@ -599,17 +599,17 @@ namespace hack {
 					// Sıfır pozisyon kontrolü
 					if (origin.x == 0 && origin.y == 0 && origin.z == 0) continue;
 					
-					// Hızı oku
+					// Read velocity
 					Vector3 velocity = g_game.process->read<Vector3>(entity + updater::offsets::m_vecVelocity);
 					
 					Vector3 screen_pos = g_game.world_to_screen(&origin);
 					
 					if (screen_pos.z >= 0.01f) {
-						// Mevcut pozisyon - daire çiz
+						// Current position - draw circle
 						render::DrawCircle(g::hdcBuffer, (int)screen_pos.x, (int)screen_pos.y, 10, color);
 						render::DrawFilledBox(g::hdcBuffer, screen_pos.x - 4, screen_pos.y - 4, 8, 8, color);
 						
-						// Tip yazısı
+						// Type text
 						render::RenderText(
 							g::hdcBuffer,
 							screen_pos.x + 15,
@@ -619,7 +619,7 @@ namespace hack {
 							11
 						);
 						
-						// Yörünge tahmini - sadece hızı varsa
+						// Trajectory prediction - only if has velocity
 						float vel_magnitude = sqrtf(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z);
 						
 						if (vel_magnitude > 10.0f) {
@@ -634,9 +634,9 @@ namespace hack {
 							Vector3 landing_pos = origin;
 							bool found_landing = false;
 							
-							// Yörüngeyi simüle et
+							// Simulate trajectory
 							for (int step = 0; step < max_steps; step++) {
-								// Fizik hesaplamaları
+								// Physics calculations
 								sim_vel.z -= gravity * time_step;
 								sim_vel.x *= air_resistance;
 								sim_vel.y *= air_resistance;
@@ -646,7 +646,7 @@ namespace hack {
 								sim_pos.y += sim_vel.y * time_step;
 								sim_pos.z += sim_vel.z * time_step;
 								
-								// Yere çarptı mı?
+								// Hit ground?
 								if (sim_pos.z < origin.z - 150.0f) {
 									landing_pos = sim_pos;
 									found_landing = true;
@@ -672,12 +672,12 @@ namespace hack {
 								}
 							}
 							
-							// İniş noktasını göster
+							// Show landing point
 							if (found_landing) {
 								Vector3 landing_screen = g_game.world_to_screen(&landing_pos);
 								
 								if (landing_screen.z >= 0.01f) {
-									// İniş noktası - X işareti
+									// Landing point - X mark
 									static const int x_size = 12;
 									int lx = (int)landing_screen.x;
 									int ly = (int)landing_screen.y;
@@ -763,41 +763,41 @@ namespace hack {
 			render::DrawFilledBox(g::hdcBuffer, center_x - 1, center_y - 1, 2, 2, RGB(255, 0, 0));
 		}
 		
-		// Bomba Timer - Düzeltilmiş Versiyon
+		// Bomb Timer - Fixed Version
 		static auto bomb_plant_time = std::chrono::steady_clock::now();
 		static bool was_planted = false;
 		
 		if (config::show_bomb_timer && g_game.isC4Planted) {
-			// Bomba yeni dikildi mi?
+			// Bomb just planted?
 			if (!was_planted) {
 				bomb_plant_time = std::chrono::steady_clock::now();
 				was_planted = true;
 			}
 			
-			// Geçen süreyi hesapla
+			// Calculate elapsed time
 			auto now = std::chrono::steady_clock::now();
 			float elapsed = std::chrono::duration<float>(now - bomb_plant_time).count();
-			float remaining = 40.0f - elapsed; // C4 40 saniyede patlar
+			float remaining = 40.0f - elapsed; // C4 explodes in 40 seconds
 			
 			if (remaining < 0) remaining = 0;
 			
 			int center_x = g::gameBounds.right / 2;
 			int timer_y = 80;
 			
-			// Arka plan kutusu
+			// Background box
 			render::DrawFilledBox(g::hdcBuffer, center_x - 120, timer_y - 10, 240, 100, RGB(20, 20, 25));
 			render::DrawBorderBox(g::hdcBuffer, center_x - 120, timer_y - 10, 240, 100, RGB(255, 50, 50));
 			
-			// Başlık
-			render::RenderText(g::hdcBuffer, center_x - 70, timer_y, "BOMBA DIKILDI", RGB(255, 50, 50), 16);
+			// Title
+			render::RenderText(g::hdcBuffer, center_x - 70, timer_y, "BOMB PLANTED", RGB(255, 50, 50), 16);
 			
-			// Geri sayım - büyük ve net
+			// Countdown - large and clear
 			char time_text[32];
 			int seconds = (int)remaining;
 			int milliseconds = (int)((remaining - seconds) * 10);
 			sprintf_s(time_text, "%d.%d", seconds, milliseconds);
 			
-			// Renk - yeşilden kırmızıya
+			// Color - green to red
 			int red = 255;
 			int green = (int)(remaining / 40.0f * 255.0f);
 			if (green > 255) green = 255;
@@ -814,12 +814,12 @@ namespace hack {
 			render::DrawFilledBox(g::hdcBuffer, bar_x, bar_y, (int)(bar_width * progress), 8, RGB(red, green, 0));
 			render::DrawBorderBox(g::hdcBuffer, bar_x, bar_y, bar_width, 8, RGB(255, 50, 50));
 			
-			// Uyarı
+			// Warning
 			if (remaining < 10.0f) {
-				render::RenderText(g::hdcBuffer, center_x - 60, timer_y + 78, "ACIL DEFUSE!", RGB(255, 0, 0), 12);
+				render::RenderText(g::hdcBuffer, center_x - 60, timer_y + 78, "URGENT DEFUSE!", RGB(255, 0, 0), 12);
 			}
 		} else {
-			// Bomba defuse edildi veya patladı - reset
+			// Bomb defused or exploded - reset
 			if (was_planted) {
 				was_planted = false;
 			}

@@ -35,9 +35,9 @@ namespace config {
 	
 	// Misc settings
 	inline bool show_fps = true;
-	inline bool show_crosshair = true; // AÇIK
+	inline bool show_crosshair = true; // ON
 	inline bool show_bomb_timer = true;
-	inline bool show_grenade_prediction = true; // Granat/molotof yörüngesi
+	inline bool show_grenade_prediction = true; // Grenade/molotov trajectory
 
 	// Aimbot settings
 	inline bool aimbot_enabled = true; // AÇIK - Otomatik aktif

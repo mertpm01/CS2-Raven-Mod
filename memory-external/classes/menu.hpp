@@ -51,43 +51,43 @@ namespace menu {
         aimbot_cat.icon = "A";
         
         MenuItem aimbot;
-        aimbot.label = "Aimbot Aktif";
+        aimbot.label = "Aimbot Active";
         aimbot.toggle_value = &config::aimbot_enabled;
         
         MenuItem aimbot_key;
-        aimbot_key.label = "Aimbot Tusu";
+        aimbot_key.label = "Aimbot Key";
         aimbot_key.int_value = &config::aimbot_key;
         aimbot_key.is_key_bind = true;
         
         MenuItem aimbot_target;
-        aimbot_target.label = "Hedef Nokta";
+        aimbot_target.label = "Target Point";
         aimbot_target.int_value = &config::aimbot_target;
         aimbot_target.is_target_selector = true;
         
         MenuItem aimbot_fov;
-        aimbot_fov.label = "FOV (Alan)";
+        aimbot_fov.label = "FOV (Area)";
         aimbot_fov.float_value = &config::aimbot_fov;
         aimbot_fov.min_value = 0;
         aimbot_fov.max_value = 250;
         aimbot_fov.is_slider = true;
         
         MenuItem aimbot_smooth;
-        aimbot_smooth.label = "Yumusatma";
+        aimbot_smooth.label = "Smoothing";
         aimbot_smooth.float_value = &config::aimbot_smooth;
         aimbot_smooth.min_value = 1;
         aimbot_smooth.max_value = 10;
         aimbot_smooth.is_slider = true;
         
         MenuItem aimbot_humanizer;
-        aimbot_humanizer.label = "Insanlastirici";
+        aimbot_humanizer.label = "Humanizer";
         aimbot_humanizer.toggle_value = &config::aimbot_humanizer;
         
         MenuItem aimbot_deathmatch;
-        aimbot_deathmatch.label = "Olum Maci Modu";
+        aimbot_deathmatch.label = "Deathmatch Mode";
         aimbot_deathmatch.toggle_value = &config::aimbot_deathmatch_mode;
         
         MenuItem aimbot_wall_check;
-        aimbot_wall_check.label = "Duvar Kontrolu";
+        aimbot_wall_check.label = "Wall Check";
         aimbot_wall_check.toggle_value = &config::aimbot_wall_check;
         
         aimbot_cat.items.push_back(aimbot);
@@ -107,23 +107,23 @@ namespace menu {
         trigger_cat.icon = "T";
         
         MenuItem triggerbot;
-        triggerbot.label = "Triggerbot Aktif";
+        triggerbot.label = "Triggerbot Active";
         triggerbot.toggle_value = &config::triggerbot_enabled;
         
         MenuItem triggerbot_key;
-        triggerbot_key.label = "Triggerbot Tusu";
+        triggerbot_key.label = "Triggerbot Key";
         triggerbot_key.int_value = &config::triggerbot_key;
         triggerbot_key.is_key_bind = true;
         
         MenuItem triggerbot_delay;
-        triggerbot_delay.label = "Gecikme (ms)";
+        triggerbot_delay.label = "Delay (ms)";
         triggerbot_delay.int_value = &config::triggerbot_delay;
         triggerbot_delay.min_value = 0;
         triggerbot_delay.max_value = 500;
         triggerbot_delay.is_slider = true;
         
         MenuItem triggerbot_team;
-        triggerbot_team.label = "Takim Kontrolu";
+        triggerbot_team.label = "Team Check";
         triggerbot_team.toggle_value = &config::triggerbot_team_check;
         
         trigger_cat.items.push_back(triggerbot);
@@ -139,27 +139,27 @@ namespace menu {
         esp_cat.icon = "E";
         
         MenuItem box_esp;
-        box_esp.label = "2D Kutu";
+        box_esp.label = "2D Box";
         box_esp.toggle_value = &config::show_box_esp;
         
         MenuItem box_3d_esp;
-        box_3d_esp.label = "3D Kutu";
+        box_3d_esp.label = "3D Box";
         box_3d_esp.toggle_value = &config::show_3d_box_esp;
         
         MenuItem skeleton_esp;
-        skeleton_esp.label = "Iskelet";
+        skeleton_esp.label = "Skeleton";
         skeleton_esp.toggle_value = &config::show_skeleton_esp;
         
         MenuItem head_tracker;
-        head_tracker.label = "Kafa Takip";
+        head_tracker.label = "Head Tracker";
         head_tracker.toggle_value = &config::show_head_tracker;
         
         MenuItem team_esp;
-        team_esp.label = "Takim ESP (Takim Arkadaslarini Goster)";
+        team_esp.label = "Team ESP (Show Teammates)";
         team_esp.toggle_value = &config::team_esp;
         
         MenuItem extra_flags;
-        extra_flags.label = "Ekstra Bilgi";
+        extra_flags.label = "Extra Info";
         extra_flags.toggle_value = &config::show_extra_flags;
         
         esp_cat.items.push_back(box_esp);
@@ -171,13 +171,13 @@ namespace menu {
         
         categories.push_back(esp_cat);
 
-        // === MISC KATEGORİSİ ===
+        // === MISC CATEGORY ===
         Category misc;
-        misc.name = "Diger";
+        misc.name = "Other";
         misc.icon = "M";
         
         MenuItem show_fps;
-        show_fps.label = "FPS Gostergesi";
+        show_fps.label = "FPS Counter";
         show_fps.toggle_value = &config::show_fps;
         
         MenuItem show_crosshair;
@@ -185,15 +185,15 @@ namespace menu {
         show_crosshair.toggle_value = &config::show_crosshair;
         
         MenuItem show_bomb_timer;
-        show_bomb_timer.label = "Bomba Timer";
+        show_bomb_timer.label = "Bomb Timer";
         show_bomb_timer.toggle_value = &config::show_bomb_timer;
         
         MenuItem show_grenade_pred;
-        show_grenade_pred.label = "Granat Tahmini";
+        show_grenade_pred.label = "Grenade Prediction";
         show_grenade_pred.toggle_value = &config::show_grenade_prediction;
         
         MenuItem auto_update;
-        auto_update.label = "Otomatik Guncelleme";
+        auto_update.label = "Auto Update";
         auto_update.toggle_value = &config::automatic_update;
         
         misc.items.push_back(show_fps);
@@ -458,7 +458,7 @@ namespace menu {
                     render::RenderText(hdc, item.x, item_y + 10, item.label.c_str(), RGB(220, 220, 220), 12);
                     
                     // Status badge - opak
-                    const char* status = is_on ? "ACIK" : "KAPALI";
+                    const char* status = is_on ? "ON" : "OFF";
                     COLORREF status_color = is_on ? RGB(0, 255, 120) : RGB(120, 120, 120);
                     int badge_x = toggle_x - 70;
                     render::DrawFilledBox(hdc, badge_x, item_y + 8, 55, 18, is_on ? RGB(0, 80, 60) : RGB(45, 45, 50));
@@ -490,11 +490,11 @@ namespace menu {
         // Footer - opak - SADECE MENÜ GENİŞLİĞİNDE
         render::DrawFilledBox(hdc, menu_x, menu_y + menu_height - 25, menu_width, 25, RGB(25, 25, 30));
         render::DrawLine(hdc, menu_x, menu_y + menu_height - 25, menu_x + menu_width, menu_y + menu_height - 25, RGB(0, 200, 200));
-        render::RenderText(hdc, menu_x + 15, menu_y + menu_height - 18, "Sag Shift: Kapat | Surukle: Tasi | END: Cikis", RGB(150, 150, 150), 10);
+        render::RenderText(hdc, menu_x + 15, menu_y + menu_height - 18, "DELETE: Close | Drag: Move | END: Exit", RGB(150, 150, 150), 10);
         
         // Status indicator - opak
         render::DrawFilledBox(hdc, menu_x + menu_width - 150, menu_y + menu_height - 18, 10, 10, RGB(0, 255, 0));
-        render::RenderText(hdc, menu_x + menu_width - 135, menu_y + menu_height - 18, "Oto Guncelleme", RGB(150, 150, 150), 10);
+        render::RenderText(hdc, menu_x + menu_width - 135, menu_y + menu_height - 18, "Auto Update", RGB(150, 150, 150), 10);
     }
     
     void handle_mouse_down(int x, int y) {
