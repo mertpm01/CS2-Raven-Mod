@@ -92,7 +92,7 @@ void CGame::loop() {
 	localpCSPlayerPawn = process->read<uintptr_t>(localList_entry2 + 112 * (localPlayerPawn & 0x1FF));
 	if (!localpCSPlayerPawn) return;
 	
-	// Public olarak sakla (RCS için gerekli)
+	// Store publicly (needed for RCS)
 	localPawnAddress = localpCSPlayerPawn;
 
 	view_matrix = process->read<view_matrix_t>(base_client.base + updater::offsets::dwViewMatrix);
@@ -116,7 +116,7 @@ void CGame::loop() {
 		player.entity = process->read<uintptr_t>(list_entry + 112 * (playerIndex & 0x1FF));
 		if (!player.entity) continue;
 
-		// Takım kontrolü - team_esp KAPALI ise takım arkadaşlarını ATLA
+		// Team check - if team_esp is OFF, SKIP teammates
 		player.team = process->read<int>(player.entity + updater::offsets::m_iTeamNum);
 		if (!config::team_esp && (player.team == localTeam)) continue;
 
@@ -134,7 +134,7 @@ void CGame::loop() {
 
 		if (!config::team_esp && (player.pCSPlayerPawn == localPlayer)) continue;
 
-		// Duvar kontrolü için is_spotted field'ını oku (aimbot wall check için gerekli)
+		// Read is_spotted field for wall check (needed for aimbot wall check)
 		player.spottedState = process->read<uintptr_t>(player.pCSPlayerPawn + updater::offsets::m_entitySpottedState);
 		player.is_spotted = process->read<bool>(player.spottedState + 0x8); // bSpotted offset
 
@@ -166,16 +166,16 @@ void CGame::loop() {
 		if (config::render_distance != -1 && (localOrigin - player.origin).length2d() > config::render_distance) continue;
 		if (player.origin.x == 0 && player.origin.y == 0) continue;
 
-		// Bone array'i her zaman oku (aimbot için gerekli)
+		// Always read bone array (needed for aimbot)
 		player.gameSceneNode = process->read<uintptr_t>(player.pCSPlayerPawn + updater::offsets::m_pGameSceneNode);
 		player.boneArray = process->read<uintptr_t>(player.gameSceneNode + 0x210);
 		
-		// Skeleton ESP açıksa tüm bone'ları oku
+		// If Skeleton ESP is on, read all bones
 		if (config::show_skeleton_esp) {
 			player.ReadBones();
 		}
 
-		// Head tracker açıksa sadece head bone'u oku
+		// If Head tracker is on, read only head bone
 		if (config::show_head_tracker && !config::show_skeleton_esp) {
 			player.ReadHead();
 		}
@@ -252,7 +252,7 @@ Vector3 CGame::world_to_screen(Vector3* v) {
 	return { x, y, w };
 }
 
-// 3D pozisyondan açı hesapla (view angle tabanlı aimbot için)
+// Calculate angle from 3D position (for view angle based aimbot)
 Vector3 CGame::calculate_angle(const Vector3& from, const Vector3& to) {
 	Vector3 delta;
 	delta.x = to.x - from.x;
@@ -262,11 +262,11 @@ Vector3 CGame::calculate_angle(const Vector3& from, const Vector3& to) {
 	float hyp = sqrtf(delta.x * delta.x + delta.y * delta.y);
 	
 	Vector3 angle;
-	angle.x = -atanf(delta.z / hyp) * (180.0f / 3.14159265358979323846f); // Pitch (negatif)
+	angle.x = -atanf(delta.z / hyp) * (180.0f / 3.14159265358979323846f); // Pitch (negative)
 	angle.y = atanf(delta.y / delta.x) * (180.0f / 3.14159265358979323846f); // Yaw
 	angle.z = 0.0f; // Roll
 
-	// Yaw'ı doğru quadrant'a ayarla
+	// Adjust yaw to correct quadrant
 	if (delta.x >= 0.0f) {
 		angle.y += 180.0f;
 	}

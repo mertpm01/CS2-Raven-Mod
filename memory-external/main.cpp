@@ -85,15 +85,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		HDC hdc = BeginPaint(hWnd, &ps);
 
 		//DOUBLE BUFFERING
-		// Her zaman beyaz ile doldur (transparent için)
+		// Always fill with white (for transparent)
 		FillRect(g::hdcBuffer, &ps.rcPaint, (HBRUSH)GetStockObject(WHITE_BRUSH));
 
-		// ESP render et (menü açık olsa bile)
+		// Render ESP (even if menu is open)
 		if (GetForegroundWindow() == g_game.process->hwnd_) {
 			hack::loop();
 		}
 		
-		// Render menu (en üstte, ESP'nin üzerine)
+		// Render menu (on top, over ESP)
 		menu::render(g::hdcBuffer);
 
 		BitBlt(hdc, 0, 0, g::gameBounds.right, g::gameBounds.bottom, g::hdcBuffer, 0, 0, SRCCOPY);
@@ -175,7 +175,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	GetClientRect(g_game.process->hwnd_, &g::gameBounds);
 
-	// Create the window - WinMain'den gelen hInstance'ı kullan
+	// Create the window - use hInstance from WinMain
 	HWND hWnd = CreateWindowExA(WS_EX_TRANSPARENT | WS_EX_TOPMOST | WS_EX_LAYERED | WS_EX_TOOLWINDOW, " ", "cs2-external-esp", WS_POPUP,
 		g::gameBounds.left, g::gameBounds.top, g::gameBounds.right - g::gameBounds.left, g::gameBounds.bottom + g::gameBounds.left, NULL, NULL, hInstance, NULL); // NULL, NULL);
 	
@@ -210,7 +210,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		
 		if (GetAsyncKeyState(VK_END) & 0x8000) finish = true;
 		
-		// DELETE tuşu ile menü aç/kapat
+		// DELETE key to open/close menu
 		static DWORD last_menu_press = 0;
 		static bool menu_was_pressed = false;
 		

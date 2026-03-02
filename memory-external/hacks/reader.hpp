@@ -62,7 +62,7 @@ public:
 	Vector3 viewAngles;
 	bool isC4Planted;
 	int localTeam;
-	uintptr_t localPawnAddress; // Local player pawn pointer - RCS için gerekli
+	uintptr_t localPawnAddress; // Local player pawn pointer - needed for RCS
 	CC4 c4;
 	std::vector<CPlayer> players = {};
 	void init();

@@ -10,11 +10,11 @@
 #include "../classes/globals.hpp"
 
 namespace hack {
-	// İnsanlaştırma için
+	// For humanization
 	std::chrono::steady_clock::time_point last_aim_time;
 	std::mt19937 rng(std::random_device{}());
 	
-	// Rastgele sayı üret (insanlaştırıcı için)
+	// Generate random number (for humanizer)
 	float random_float(float min, float max) {
 		std::uniform_real_distribution<float> dist(min, max);
 		return dist(rng);
@@ -28,57 +28,57 @@ namespace hack {
 		return sqrtf(dx * dx + dy * dy + dz * dz);
 	}
 	
-	// Otomatik atış - KALDIRILDI (triggerbot'a taşındı)
+	// Auto fire - REMOVED (moved to triggerbot)
 	
-	// TRIGGERBOT - nişangahın üzerinde düşman varsa otomatik ateş
+	// TRIGGERBOT - auto fire if enemy is on crosshair
 	void triggerbot() {
-		// Triggerbot aktif mi?
+		// Triggerbot active?
 		if (!config::triggerbot_enabled)
 			return;
 		
-		// Triggerbot tuşu basılı mı?
+		// Triggerbot key pressed?
 		if (!(GetAsyncKeyState(config::triggerbot_key) & 0x8000))
 			return;
 		
-		// Oyun verisi hazır mı?
+		// Game data ready?
 		if (g_game.players.empty())
 			return;
 		
-		// Ekran merkezi
+		// Screen center
 		float screen_center_x = g::gameBounds.right / 2.0f;
 		float screen_center_y = g::gameBounds.bottom / 2.0f;
 		
-		// Nişangahın üzerinde düşman var mı kontrol et
+		// Check if enemy is on crosshair
 		for (auto& player : g_game.players) {
-			// Sağlık kontrolü
+			// Health check
 			if (player.health <= 0)
 				continue;
 			
-			// Takım kontrolü
+			// Team check
 			if (config::triggerbot_team_check) {
 				if (player.team == g_game.localTeam)
 					continue;
 			}
 			
-			// Oyuncunun göğüs pozisyonu
+			// Player chest position
 			Vector3 chest_pos;
 			chest_pos.x = player.origin.x;
 			chest_pos.y = player.origin.y;
 			chest_pos.z = player.origin.z + 50.0f;
 			
-			// Ekrana çevir
+			// Convert to screen
 			Vector3 screen_pos = g_game.world_to_screen(&chest_pos);
 			
-			// Ekran dışında mı?
+			// Off screen?
 			if (screen_pos.z < 0.01f)
 				continue;
 			
-			// Nişangaha olan mesafe
+			// Distance to crosshair
 			float dx = screen_pos.x - screen_center_x;
 			float dy = screen_pos.y - screen_center_y;
 			float distance = sqrtf(dx * dx + dy * dy);
 			
-			// Nişangahın üzerinde mi? (30 pixel içinde)
+			// On crosshair? (within 30 pixels)
 			if (distance < 30.0f) {
 				// Gecikme uygula
 				static auto last_trigger_time = std::chrono::steady_clock::now();
@@ -86,24 +86,24 @@ namespace hack {
 				auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_trigger_time).count();
 				
 				if (elapsed >= config::triggerbot_delay) {
-					// Ateş et
+					// Fire
 					mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
 					Sleep(10);
 					mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
 					last_trigger_time = now;
-					return; // Bir düşmana ateş ettikten sonra çık
+					return; // Exit after firing at one enemy
 				}
 			}
 		}
 	}
 
-	// HIZLI VE DİREKT AIMBOT - Tahmin yok, direkt kafaya
+	// FAST AND DIRECT AIMBOT - No prediction, direct to head
 	void aimbot() {
 		if (!config::aimbot_enabled) return;
 		if (!(GetAsyncKeyState(config::aimbot_key) & 0x8000)) return;
 		if (g_game.players.empty()) return;
 
-		// Gecikme kontrolü kaldırıldı - maksimum hız
+		// Delay check removed - maximum speed
 
 		float screen_center_x = g::gameBounds.right / 2.0f;
 		float screen_center_y = g::gameBounds.bottom / 2.0f;
@@ -112,7 +112,7 @@ namespace hack {
 		CPlayer* best_target = nullptr;
 		Vector3 best_screen_pos;
 
-		// En yakın hedefi bul
+		// Find closest target
 		for (auto& player : g_game.players) {
 			if (player.health <= 0) continue;
 			
@@ -121,11 +121,11 @@ namespace hack {
 			float world_distance = calculate_3d_distance(g_game.localOrigin, player.origin);
 			if (world_distance > 15000.0f) continue; // 150m max
 
-			// Hedef pozisyon - TAHMİN YOK, DİREKT MEVCUT POZİSYON
+			// Target position - NO PREDICTION, DIRECT CURRENT POSITION
 			Vector3 target_pos = player.origin;
-			if (config::aimbot_target == 0) target_pos.z += 65.0f; // Kafa
-			else if (config::aimbot_target == 1) target_pos.z += 50.0f; // Göğüs
-			else target_pos.z += 10.0f; // Ayak
+			if (config::aimbot_target == 0) target_pos.z += 65.0f; // Head
+			else if (config::aimbot_target == 1) target_pos.z += 50.0f; // Chest
+			else target_pos.z += 10.0f; // Foot
 			
 			Vector3 screen_pos = g_game.world_to_screen(&target_pos);
 			if (screen_pos.z < 0.01f) continue;
@@ -137,7 +137,7 @@ namespace hack {
 			if (config::aimbot_fov > 0 && screen_dist > config::aimbot_fov) continue;
 			if (config::aimbot_wall_check && !player.is_spotted) continue;
 
-			// En yakın hedefi seç
+			// Select closest target
 			if (screen_dist < best_distance) {
 				best_distance = screen_dist;
 				best_target = &player;
@@ -149,13 +149,13 @@ namespace hack {
 			float dx = best_screen_pos.x - screen_center_x;
 			float dy = best_screen_pos.y - screen_center_y;
 
-			// İnsanlaştırıcı (opsiyonel)
+			// Humanizer (optional)
 			if (config::aimbot_humanizer) {
 				dx += random_float(-0.3f, 0.3f);
 				dy += random_float(-0.3f, 0.3f);
 			}
 
-			// Basit yumuşatma
+			// Simple smoothing
 			dx /= config::aimbot_smooth;
 			dy /= config::aimbot_smooth;
 
@@ -224,60 +224,60 @@ namespace hack {
 		* Loop through all the players in the entity list
 		**/
 		for (auto player = g_game.players.begin(); player < g_game.players.end(); player++) {
-			// Sağlık kontrolü - ölü oyuncuları atla (performans)
+			// Health check - skip dead players (performance)
 			if (player->health <= 0)
 				continue;
 			
-			// Temel pozisyon hesaplamaları
+			// Basic position calculations
 			const Vector3 screenPos = g_game.world_to_screen(&player->origin);
 			
-			// Ekran dışı kontrolü - erken çık
+			// Off-screen check - early exit
 			if (screenPos.z < 0.01f || !utils.is_in_bounds(screenPos, g_game.game_bounds.right, g_game.game_bounds.bottom))
 				continue;
 			
-			// Head pozisyonu sadece gerekirse hesapla
+			// Head position only if needed
 			const Vector3 screenHead = g_game.world_to_screen(&player->head);
 
-			// 2D box boyutları (iyileştirilmiş)
+			// 2D box dimensions (improved)
 			const float height = screenPos.y - screenHead.y;
-			const float width = height / 2.2f; // Daha iyi oran
+			const float width = height / 2.2f; // Better ratio
 
-			// Mesafe hesaplama - cache'le
+			// Distance calculation - cache
 			float distance = g_game.localOrigin.calculate_distance(player->origin);
 			int roundedDistance = std::round(distance / 10.f);
 
-			// Renk seçimi - tek seferlik
+			// Color selection - one time
 			bool isTeammate = (g_game.localTeam == player->team);
 			COLORREF boxColor = isTeammate ? config::esp_box_color_team : config::esp_box_color_enemy;
 			COLORREF skeletonColor = isTeammate ? config::esp_skeleton_color_team : config::esp_skeleton_color_enemy;
 
-			// 3D BOX ESP - optimize edilmiş
+			// 3D BOX ESP - optimized
 			if (config::show_3d_box_esp) {
-				// Sabit boyutlar
+				// Fixed dimensions
 				static const float box_width = 32.0f;
 				static const float box_depth = 32.0f;
 				static const float box_height = 72.0f;
 				
-				// Köşe hesaplamaları - inline
+				// Corner calculations - inline
 				float hw = box_width * 0.5f;
 				float hd = box_depth * 0.5f;
 				float px = player->origin.x;
 				float py = player->origin.y;
 				float pz = player->origin.z;
 				
-				// 8 köşe - stack allocation
+				// 8 corners - stack allocation
 				Vector3 corners[8] = {
-					{px - hw, py - hd, pz},           // 0: Sol ön alt
-					{px + hw, py - hd, pz},           // 1: Sağ ön alt
-					{px + hw, py + hd, pz},           // 2: Sağ arka alt
-					{px - hw, py + hd, pz},           // 3: Sol arka alt
-					{px - hw, py - hd, pz + box_height}, // 4: Sol ön üst
-					{px + hw, py - hd, pz + box_height}, // 5: Sağ ön üst
-					{px + hw, py + hd, pz + box_height}, // 6: Sağ arka üst
-					{px - hw, py + hd, pz + box_height}  // 7: Sol arka üst
+					{px - hw, py - hd, pz},           // 0: Left front bottom
+					{px + hw, py - hd, pz},           // 1: Right front bottom
+					{px + hw, py + hd, pz},           // 2: Right back bottom
+					{px - hw, py + hd, pz},           // 3: Left back bottom
+					{px - hw, py - hd, pz + box_height}, // 4: Left front top
+					{px + hw, py - hd, pz + box_height}, // 5: Right front top
+					{px + hw, py + hd, pz + box_height}, // 6: Right back top
+					{px - hw, py + hd, pz + box_height}  // 7: Left back top
 				};
 				
-				// Ekrana çevir - tek loop
+				// Convert to screen - single loop
 				Vector3 sc[8];
 				bool allVisible = true;
 				for (int i = 0; i < 8; i++) {
